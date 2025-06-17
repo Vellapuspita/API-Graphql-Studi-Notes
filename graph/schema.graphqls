@@ -1,28 +1,108 @@
-# GraphQL schema example
-#
-# https://gqlgen.com/getting-started/
+scalar DateTime
 
-type Todo {
-  id: ID!
-  text: String!
-  done: Boolean!
-  user: User!
-}
+# ====================
+# Type Definitions
+# ====================
 
 type User {
   id: ID!
   name: String!
+  email: String!
+  password: String!
+  confirm_password: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  studyNotes: [StudyNote!]!
 }
+
+type StudyNote {
+  id: ID!
+  id_users: ID!
+  id_topics: ID!
+  judul: String!
+  createdBy: ID!
+  isGrup: Boolean!
+  deskripsi: String!
+  content: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  users: [User!]!
+}
+
+type Topic {
+  id: ID!
+  topics: String!
+}
+
+type Collab {
+  id: ID!
+  id_user: ID!
+  id_notes: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+# ====================
+# Query Definitions
+# ====================
 
 type Query {
-  todos: [Todo!]!
+  getAllUsers: [User!]!
+  getUserById(id: ID!): User
+
+  getAllStudyNotes: [StudyNote!]!
+  getStudyNoteById(id: ID!): StudyNote
+
+  getAllTopics: [Topic!]!
+  getTopicById(id: ID!): Topic
+
+  getAllCollabs: [Collab!]!
 }
 
-input NewTodo {
-  text: String!
-  userId: String!
+# ====================
+# Input Types
+# ====================
+
+input NewUser {
+  name: String!
+  email: String!
+  password: String!
+  confirm_password: String!
 }
+
+input NewStudyNote {
+  id_users: ID!
+  id_topics: ID!
+  judul: String!
+  createdBy: ID!
+  isGrup: Boolean!
+  deskripsi: String!
+  content: String!
+}
+
+input NewTopic {
+  topics: String!
+}
+
+input NewCollab {
+  id_user: ID!
+  id_notes: ID!
+}
+
+# ====================
+# Mutation Definitions
+# ====================
 
 type Mutation {
-  createTodo(input: NewTodo!): Todo!
+  createUser(input: NewUser!): User!
+  updateUser(id: ID!, input: NewUser!): User!
+  deleteUser(id: ID!): Boolean!
+
+  createStudyNote(input: NewStudyNote!): StudyNote!
+  updateStudyNote(id: ID!, input: NewStudyNote!): StudyNote!
+  deleteStudyNote(id: ID!): Boolean!
+
+  createTopic(input: NewTopic!): Topic!
+
+  addCollab(input: NewCollab!): Collab!
 }
