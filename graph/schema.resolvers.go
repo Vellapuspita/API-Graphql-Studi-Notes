@@ -6,43 +6,46 @@ package graph
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"studynotes/graph/model"
-	"studynotes/models"
+	"studynotes/config"
+	model1 "studynotes/graph/model"
+	models1 "studynotes/models"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // ID is the resolver for the id field.
-func (r *collabResolver) ID(ctx context.Context, obj *models.Collab) (string, error) {
+func (r *collabResolver) ID(ctx context.Context, obj *models1.Collab) (string, error) {
 	panic(fmt.Errorf("not implemented: ID - id"))
 }
 
 // IDUser is the resolver for the id_user field.
-func (r *collabResolver) IDUser(ctx context.Context, obj *models.Collab) (string, error) {
+func (r *collabResolver) IDUser(ctx context.Context, obj *models1.Collab) (string, error) {
 	panic(fmt.Errorf("not implemented: IDUser - id_user"))
 }
 
 // IDNotes is the resolver for the id_notes field.
-func (r *collabResolver) IDNotes(ctx context.Context, obj *models.Collab) (string, error) {
+func (r *collabResolver) IDNotes(ctx context.Context, obj *models1.Collab) (string, error) {
 	panic(fmt.Errorf("not implemented: IDNotes - id_notes"))
 }
 
 // CreatedAt is the resolver for the createdAt field.
-func (r *collabResolver) CreatedAt(ctx context.Context, obj *models.Collab) (string, error) {
+func (r *collabResolver) CreatedAt(ctx context.Context, obj *models1.Collab) (string, error) {
 	panic(fmt.Errorf("not implemented: CreatedAt - createdAt"))
 }
 
 // UpdatedAt is the resolver for the updatedAt field.
-func (r *collabResolver) UpdatedAt(ctx context.Context, obj *models.Collab) (string, error) {
+func (r *collabResolver) UpdatedAt(ctx context.Context, obj *models1.Collab) (string, error) {
 	panic(fmt.Errorf("not implemented: UpdatedAt - updatedAt"))
 }
 
 // CreateUser is the resolver for the createUser field.
-func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) (*model.User, error) {
+func (r *mutationResolver) CreateUser(ctx context.Context, input model1.NewUser) (*model1.User, error) {
 	panic(fmt.Errorf("not implemented: CreateUser - createUser"))
 }
 
 // UpdateUser is the resolver for the updateUser field.
-func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input model.NewUser) (*model.User, error) {
+func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input model1.NewUser) (*model1.User, error) {
 	panic(fmt.Errorf("not implemented: UpdateUser - updateUser"))
 }
 
@@ -52,12 +55,12 @@ func (r *mutationResolver) DeleteUser(ctx context.Context, id string) (bool, err
 }
 
 // CreateStudyNote is the resolver for the createStudyNote field.
-func (r *mutationResolver) CreateStudyNote(ctx context.Context, input model.NewStudyNote) (*model.StudyNote, error) {
+func (r *mutationResolver) CreateStudyNote(ctx context.Context, input model1.NewStudyNote) (*model1.StudyNote, error) {
 	panic(fmt.Errorf("not implemented: CreateStudyNote - createStudyNote"))
 }
 
 // UpdateStudyNote is the resolver for the updateStudyNote field.
-func (r *mutationResolver) UpdateStudyNote(ctx context.Context, id string, input model.NewStudyNote) (*model.StudyNote, error) {
+func (r *mutationResolver) UpdateStudyNote(ctx context.Context, id string, input model1.NewStudyNote) (*model1.StudyNote, error) {
 	panic(fmt.Errorf("not implemented: UpdateStudyNote - updateStudyNote"))
 }
 
@@ -67,57 +70,95 @@ func (r *mutationResolver) DeleteStudyNote(ctx context.Context, id string) (bool
 }
 
 // CreateTopic is the resolver for the createTopic field.
-func (r *mutationResolver) CreateTopic(ctx context.Context, input model.NewTopic) (*models.Topic, error) {
+func (r *mutationResolver) CreateTopic(ctx context.Context, input model1.NewTopic) (*models1.Topic, error) {
 	panic(fmt.Errorf("not implemented: CreateTopic - createTopic"))
 }
 
 // AddCollab is the resolver for the addCollab field.
-func (r *mutationResolver) AddCollab(ctx context.Context, input model.NewCollab) (*models.Collab, error) {
+func (r *mutationResolver) AddCollab(ctx context.Context, input model1.NewCollab) (*models1.Collab, error) {
 	panic(fmt.Errorf("not implemented: AddCollab - addCollab"))
 }
 
+// Register is the resolver for the register field.
+func (r *mutationResolver) Register(ctx context.Context, input model1.RegisterInput) (*model1.User, error) {
+	// Hash password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, err
+	}
+
+	user := &models.User{
+		Username: input.Name,
+		Email:    input.Email,
+		Password: string(hashedPassword),
+	}
+
+	if err := config.DB.Create(user).Error; err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
+// Login is the resolver for the login field.
+func (r *mutationResolver) Login(ctx context.Context, input model1.LoginInput) (*model1.AuthPayload, error) {
+	var user models.User
+	if err := config.DB.Where("email = ?", input.Email).First(&user).Error; err != nil {
+		return nil, errors.New("email tidak ditemukan")
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.Password)); err != nil {
+		return nil, errors.New("password salah")
+	}
+
+	return &model.AuthPayload{
+		Token: "dummy-token", // nanti kita ganti pakai JWT
+		User: &user,
+	}, nil
+}
+
 // GetAllUsers is the resolver for the getAllUsers field.
-func (r *queryResolver) GetAllUsers(ctx context.Context) ([]*model.User, error) {
+func (r *queryResolver) GetAllUsers(ctx context.Context) ([]*model1.User, error) {
 	panic(fmt.Errorf("not implemented: GetAllUsers - getAllUsers"))
 }
 
 // GetUserByID is the resolver for the getUserById field.
-func (r *queryResolver) GetUserByID(ctx context.Context, id string) (*model.User, error) {
+func (r *queryResolver) GetUserByID(ctx context.Context, id string) (*model1.User, error) {
 	panic(fmt.Errorf("not implemented: GetUserByID - getUserById"))
 }
 
 // GetAllStudyNotes is the resolver for the getAllStudyNotes field.
-func (r *queryResolver) GetAllStudyNotes(ctx context.Context) ([]*model.StudyNote, error) {
+func (r *queryResolver) GetAllStudyNotes(ctx context.Context) ([]*model1.StudyNote, error) {
 	panic(fmt.Errorf("not implemented: GetAllStudyNotes - getAllStudyNotes"))
 }
 
 // GetStudyNoteByID is the resolver for the getStudyNoteById field.
-func (r *queryResolver) GetStudyNoteByID(ctx context.Context, id string) (*model.StudyNote, error) {
+func (r *queryResolver) GetStudyNoteByID(ctx context.Context, id string) (*model1.StudyNote, error) {
 	panic(fmt.Errorf("not implemented: GetStudyNoteByID - getStudyNoteById"))
 }
 
 // GetAllTopics is the resolver for the getAllTopics field.
-func (r *queryResolver) GetAllTopics(ctx context.Context) ([]*models.Topic, error) {
+func (r *queryResolver) GetAllTopics(ctx context.Context) ([]*models1.Topic, error) {
 	panic(fmt.Errorf("not implemented: GetAllTopics - getAllTopics"))
 }
 
 // GetTopicByID is the resolver for the getTopicById field.
-func (r *queryResolver) GetTopicByID(ctx context.Context, id string) (*models.Topic, error) {
+func (r *queryResolver) GetTopicByID(ctx context.Context, id string) (*models1.Topic, error) {
 	panic(fmt.Errorf("not implemented: GetTopicByID - getTopicById"))
 }
 
 // GetAllCollabs is the resolver for the getAllCollabs field.
-func (r *queryResolver) GetAllCollabs(ctx context.Context) ([]*models.Collab, error) {
+func (r *queryResolver) GetAllCollabs(ctx context.Context) ([]*models1.Collab, error) {
 	panic(fmt.Errorf("not implemented: GetAllCollabs - getAllCollabs"))
 }
 
 // ID is the resolver for the id field.
-func (r *topicResolver) ID(ctx context.Context, obj *models.Topic) (string, error) {
+func (r *topicResolver) ID(ctx context.Context, obj *models1.Topic) (string, error) {
 	panic(fmt.Errorf("not implemented: ID - id"))
 }
 
 // Topics is the resolver for the topics field.
-func (r *topicResolver) Topics(ctx context.Context, obj *models.Topic) (string, error) {
+func (r *topicResolver) Topics(ctx context.Context, obj *models1.Topic) (string, error) {
 	panic(fmt.Errorf("not implemented: Topics - topics"))
 }
 
@@ -137,18 +178,3 @@ type collabResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type topicResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//    it when you're done.
-//  - You have helper methods in this file. Move them out to keep these resolver files clean.
-/*
-	func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) (*model.Todo, error) {
-	panic(fmt.Errorf("not implemented: CreateTodo - createTodo"))
-}
-func (r *queryResolver) Todos(ctx context.Context) ([]*model.Todo, error) {
-	panic(fmt.Errorf("not implemented: Todos - todos"))
-}
-*/

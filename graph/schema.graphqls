@@ -8,8 +8,6 @@ type User {
   id: ID!
   name: String!
   email: String!
-  password: String!
-  confirm_password: String!
   createdAt: DateTime!
   updatedAt: DateTime!
   studyNotes: [StudyNote!]!
@@ -43,23 +41,6 @@ type Collab {
 }
 
 # ====================
-# Query Definitions
-# ====================
-
-type Query {
-  getAllUsers: [User!]!
-  getUserById(id: ID!): User
-
-  getAllStudyNotes: [StudyNote!]!
-  getStudyNoteById(id: ID!): StudyNote
-
-  getAllTopics: [Topic!]!
-  getTopicById(id: ID!): Topic
-
-  getAllCollabs: [Collab!]!
-}
-
-# ====================
 # Input Types
 # ====================
 
@@ -89,6 +70,43 @@ input NewCollab {
   id_notes: ID!
 }
 
+input RegisterInput {
+  name: String!
+  email: String!
+  password: String!
+}
+
+input LoginInput {
+  email: String!
+  password: String!
+}
+
+# ====================
+# Auth Types
+# ====================
+
+type AuthPayload {
+  token: String!
+  user: User!
+}
+
+# ====================
+# Query Definitions
+# ====================
+
+type Query {
+  getAllUsers: [User!]!
+  getUserById(id: ID!): User
+
+  getAllStudyNotes: [StudyNote!]!
+  getStudyNoteById(id: ID!): StudyNote
+
+  getAllTopics: [Topic!]!
+  getTopicById(id: ID!): Topic
+
+  getAllCollabs: [Collab!]!
+}
+
 # ====================
 # Mutation Definitions
 # ====================
@@ -105,4 +123,7 @@ type Mutation {
   createTopic(input: NewTopic!): Topic!
 
   addCollab(input: NewCollab!): Collab!
+
+  register(input: RegisterInput!): User!
+  login(input: LoginInput!): AuthPayload!
 }

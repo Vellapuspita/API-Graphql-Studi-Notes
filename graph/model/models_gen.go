@@ -2,6 +2,16 @@
 
 package model
 
+type AuthPayload struct {
+	Token string `json:"token"`
+	User  *User  `json:"user"`
+}
+
+type LoginInput struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
 type Mutation struct {
 }
 
@@ -34,6 +44,12 @@ type NewUser struct {
 type Query struct {
 }
 
+type RegisterInput struct {
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
 type StudyNote struct {
 	ID        string  `json:"id"`
 	IDUsers   string  `json:"id_users"`
@@ -49,12 +65,10 @@ type StudyNote struct {
 }
 
 type User struct {
-	ID              string       `json:"id"`
-	Name            string       `json:"name"`
-	Email           string       `json:"email"`
-	Password        string       `json:"password"`
-	ConfirmPassword string       `json:"confirm_password"`
-	CreatedAt       string       `json:"createdAt"`
-	UpdatedAt       string       `json:"updatedAt"`
-	StudyNotes      []*StudyNote `json:"studyNotes"`
+	ID         string       `json:"id"`
+	Name       string       `json:"name"`
+	Email      string       `json:"email"`
+	CreatedAt  string       `json:"createdAt"`
+	UpdatedAt  string       `json:"updatedAt"`
+	StudyNotes []*StudyNote `json:"studyNotes"`
 }
