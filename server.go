@@ -4,9 +4,9 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"studynotes/graph"
 	"studynotes/config"
-
+	"studynotes/graph"
+	"studynotes/middleware"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/extension"
@@ -19,32 +19,31 @@ import (
 const defaultPort = "8080"
 
 func main() {
-	// ⏬ Connect to Database
-	config.ConnectDatabase()
+	db := config.ConnectDB()
 
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = defaultPort
 	}
 
-	// ⏬ Initialize GraphQL server
-	srv := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{}}))
+	srv := handler.New(graph.NewExecutableSchema(graph.Config{
+		Resolvers: &graph.Resolver{DB: db}, // ✅ DB disimpan ke Resolver
+	}))
 
 	srv.AddTransport(transport.Options{})
 	srv.AddTransport(transport.GET{})
 	srv.AddTransport(transport.POST{})
 
-	srv.SetQueryCache(lru.New )
+	srv.SetQueryCache(lru.New[*ast.QueryDocument](1000))
 
 	srv.Use(extension.Introspection{})
 	srv.Use(extension.AutomaticPersistedQuery{
-		Cache: lru.New ,
+		Cache: lru.New[string](100),
 	})
 
-	// ⏬ Route for playground and GraphQL endpoint
 	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
-	http.Handle("/query", srv)
+	http.Handle("/query", middleware.MiddlewareJWT(srv))
 
-	log.Printf("🚀 Server ready at http://localhost:%s/ 🚀", port)
+	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }

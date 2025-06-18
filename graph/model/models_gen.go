@@ -2,73 +2,31 @@
 
 package model
 
-type AuthPayload struct {
+type AuthResponse struct {
 	Token string `json:"token"`
 	User  *User  `json:"user"`
 }
 
-type LoginInput struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-
 type Mutation struct {
-}
-
-type NewCollab struct {
-	IDUser  string `json:"id_user"`
-	IDNotes string `json:"id_notes"`
-}
-
-type NewStudyNote struct {
-	IDUsers   string `json:"id_users"`
-	IDTopics  string `json:"id_topics"`
-	Judul     string `json:"judul"`
-	CreatedBy string `json:"createdBy"`
-	IsGrup    bool   `json:"isGrup"`
-	Deskripsi string `json:"deskripsi"`
-	Content   string `json:"content"`
-}
-
-type NewTopic struct {
-	Topics string `json:"topics"`
-}
-
-type NewUser struct {
-	Name            string `json:"name"`
-	Email           string `json:"email"`
-	Password        string `json:"password"`
-	ConfirmPassword string `json:"confirm_password"`
 }
 
 type Query struct {
 }
 
 type RegisterInput struct {
-	Name     string `json:"name"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Name            string `json:"name"`
+	Email           string `json:"email"`
+	Password        string `json:"password"`
+	ConfirmPassword string `json:"confirmPassword"`
 }
 
 type StudyNote struct {
-	ID        string  `json:"id"`
-	IDUsers   string  `json:"id_users"`
-	IDTopics  string  `json:"id_topics"`
-	Judul     string  `json:"judul"`
-	CreatedBy string  `json:"createdBy"`
-	IsGrup    bool    `json:"isGrup"`
-	Deskripsi string  `json:"deskripsi"`
-	Content   string  `json:"content"`
-	CreatedAt string  `json:"createdAt"`
-	UpdatedAt string  `json:"updatedAt"`
-	Users     []*User `json:"users"`
+	ID    string `json:"id"`
+	Title string `json:"title"`
 }
 
 type User struct {
-	ID         string       `json:"id"`
-	Name       string       `json:"name"`
-	Email      string       `json:"email"`
-	CreatedAt  string       `json:"createdAt"`
-	UpdatedAt  string       `json:"updatedAt"`
-	StudyNotes []*StudyNote `json:"studyNotes"`
+	ID    string `json:"id"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
 }
