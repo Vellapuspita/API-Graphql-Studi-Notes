@@ -1,7 +1,7 @@
 # API-Graphql-Studi-Notes
 
-
-Nama Kelompok
+---
+### Nama Kelompok
 
 1. Vella Puspitasari Wijayanti      (42230043)
 2. Ni Made Ochinana Sephti Pratiwi  (42230027)
