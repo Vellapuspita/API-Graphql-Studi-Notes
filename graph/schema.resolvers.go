@@ -27,7 +27,7 @@ func (r *mutationResolver) Register(ctx context.Context, input model.RegisterInp
 		return nil, fmt.Errorf("failed to hash password: %v", err)
 	}
 
-	user := &models.Users{
+	user := &models.User{
 		Name:     input.Name,
 		Email:    input.Email,
 		Password: string(hashedPassword),
@@ -55,7 +55,7 @@ func (r *mutationResolver) Register(ctx context.Context, input model.RegisterInp
 
 // Login is the resolver for the login field.
 func (r *mutationResolver) Login(ctx context.Context, email string, password string) (*model.AuthResponse, error) {
-	var user models.Users
+	var user models.User
 	if err := r.DB.Where("email = ?", email).First(&user).Error; err != nil {
 		return nil, fmt.Errorf("user not found")
 	}
@@ -79,18 +79,186 @@ func (r *mutationResolver) Login(ctx context.Context, email string, password str
 	}, nil
 }
 
-// StudyNotes is the resolver for the studyNotes field.
-func (r *queryResolver) StudyNotes(ctx context.Context) ([]*model.StudyNote, error) {
-	return []*model.StudyNote{
-		{ID: "1", Title: "Belajar GraphQL"},
-		{ID: "2", Title: "Belajar Go dan gqlgen"},
-		{ID: "3", Title: "Autentikasi JWT"},
+// CreateTopic is the resolver for the createTopic field.
+func (r *mutationResolver) CreateTopic(ctx context.Context, input model.NewTopicInput) (*model.Topic, error) {
+	// Buat struct dari DB model
+	newTopic := &models.Topic{
+		Topics: input.Topics,
+	}
+
+	// Simpan ke DB
+	if err := r.DB.Create(newTopic).Error; err != nil {
+		return nil, fmt.Errorf("failed to create topic: %v", err)
+	}
+
+	// Kembalikan GraphQL response
+	return &model.Topic{
+		ID:     fmt.Sprint(newTopic.ID), // konversi dari uint ke string
+		Topics: newTopic.Topics,
 	}, nil
 }
 
-// StudyNote is the resolver for the StudyNote field.
+// UpdateTopic is the resolver for the updateTopic field.
+func (r *mutationResolver) UpdateTopic(ctx context.Context, id string, input model.UpdateTopicInput) (*model.Topic, error) {
+	var topic models.Topic
+
+	// Cari by ID
+	if err := r.DB.First(&topic, id).Error; err != nil {
+		return nil, fmt.Errorf("topic not found")
+	}
+
+	// Update field
+	topic.Topics = input.Topics
+
+	// Simpan perubahan
+	if err := r.DB.Save(&topic).Error; err != nil {
+		return nil, fmt.Errorf("failed to update topic: %v", err)
+	}
+
+	// Kembalikan hasil ke GraphQL
+	return &model.Topic{
+		ID:     fmt.Sprint(topic.ID),
+		Topics: topic.Topics,
+	}, nil
+}
+
+// DeleteTopic is the resolver for the deleteTopic field.
+func (r *mutationResolver) DeleteTopic(ctx context.Context, id string) (bool, error) {
+	if err := r.DB.Delete(&models.Topic{}, id).Error; err != nil {
+		return false, fmt.Errorf("failed to delete topic: %v", err)
+	}
+	return true, nil
+}
+
+// CreateStudyNote is the resolver for the createStudyNote field.
+func (r *mutationResolver) CreateStudyNote(ctx context.Context, input model.CreateStudyNoteInput) (*model.StudyNote, error) {
+	newNote := &models.StudyNote{
+		IDUsers:   uint(input.IDUsers),
+		IDTopics:  uint(input.IDTopics),
+		Judul:     input.Judul,
+		CreatedBy: uint(input.CreatedBy),
+		IsGrup:    input.IsGrup,
+		Deskripsi: func() string {
+			if input.Deskripsi != nil {
+				return *input.Deskripsi
+			}
+		return ""
+		}(),
+		Content: func() string {
+			if input.Content != nil {
+				return *input.Content
+			}
+		return ""
+		}(),
+
+	}
+
+	if err := r.DB.Create(newNote).Error; err != nil {
+		return nil, fmt.Errorf("failed to create study note: %v", err)
+	}
+
+	return &model.StudyNote{
+		ID:        fmt.Sprint(newNote.ID),
+		IDUsers:   int32(newNote.IDUsers),
+		IDTopics:  int32(newNote.IDTopics),
+		Judul:     newNote.Judul,
+		CreatedBy: int32(newNote.CreatedBy),
+		IsGrup:    newNote.IsGrup,
+		Deskripsi: &newNote.Deskripsi,
+		Content:   &newNote.Content,
+		CreatedAt: newNote.CreatedAt,
+		UpdatedAt: newNote.UpdatedAt,
+		Users:     []*model.User{}, // isi jika kamu butuh tampilkan kolaborator
+	}, nil
+}
+
+// UpdateStudyNote is the resolver for the updateStudyNote field.
+func (r *mutationResolver) UpdateStudyNote(ctx context.Context, id string, input model.UpdateStudyNoteInput) (*model.StudyNote, error) {
+	var note models.StudyNote
+
+	if err := r.DB.First(&note, id).Error; err != nil {
+		return nil, fmt.Errorf("study note not found")
+	}
+
+	if input.IDUsers != nil {
+		note.IDUsers = uint(*input.IDUsers)
+	}
+	if input.IDTopics != nil {
+		note.IDTopics = uint(*input.IDTopics)
+	}
+	if input.Judul != nil {
+		note.Judul = *input.Judul
+	}
+	if input.CreatedBy != nil {
+		note.CreatedBy = uint(*input.CreatedBy)
+	}
+	if input.IsGrup != nil {
+		note.IsGrup = *input.IsGrup
+	}
+	if input.Deskripsi != nil {
+		note.Deskripsi = *input.Deskripsi
+	}
+	if input.Content != nil {
+		note.Content = *input.Content
+	}
+
+	if err := r.DB.Save(&note).Error; err != nil {
+		return nil, fmt.Errorf("failed to update study note: %v", err)
+	}
+
+	return &model.StudyNote{
+		ID:        fmt.Sprint(note.ID),
+		IDUsers:   int32(note.IDUsers),
+		IDTopics:  int32(note.IDTopics),
+		Judul:     note.Judul,
+		CreatedBy: int32(note.CreatedBy),
+		IsGrup:    note.IsGrup,
+		Deskripsi: &note.Deskripsi,
+		Content:   &note.Content,
+		CreatedAt: note.CreatedAt,
+		UpdatedAt: note.UpdatedAt,
+		Users:     []*model.User{}, // opsional
+	}, nil
+}
+
+// DeleteStudyNote is the resolver for the deleteStudyNote field.
+func (r *mutationResolver) DeleteStudyNote(ctx context.Context, id string) (bool, error) {
+	if err := r.DB.Delete(&models.StudyNote{}, id).Error; err != nil {
+		return false, fmt.Errorf("failed to delete study note: %v", err)
+	}
+	return true, nil
+}
+
+// StudyNotes is the resolver for the studyNotes field. // Untuk memanggil semua study notes
+func (r *queryResolver) StudyNotes(ctx context.Context) ([]*model.StudyNote, error) {
+	return []*model.StudyNote{
+		{ID: "1", Judul: "Belajar GraphQL"},
+		{ID: "2", Judul: "Belajar Go dan gqlgen"},
+		{ID: "3", Judul: "Autentikasi JWT"},
+	}, nil
+}
+
+// StudyNote is the resolver for the studyNote field.  // Untuk memanggil study note by ID
 func (r *queryResolver) StudyNote(ctx context.Context, id string) (*model.StudyNote, error) {
-	panic(fmt.Errorf("not implemented: StudyNote - StudyNote"))
+	var note models.StudyNote
+
+	if err := r.DB.First(&note, id).Error; err != nil {
+		return nil, fmt.Errorf("study note not found")
+	}
+
+	return &model.StudyNote{
+		ID:        fmt.Sprint(note.ID),
+		IDUsers:   int32(note.IDUsers),
+		IDTopics:  int32(note.IDTopics),
+		Judul:     note.Judul,
+		CreatedBy: int32(note.CreatedBy),
+		IsGrup:    note.IsGrup,
+		Deskripsi: &note.Deskripsi,
+		Content:   &note.Content,
+		CreatedAt: note.CreatedAt,
+		UpdatedAt: note.UpdatedAt,
+		Users:     []*model.User{},
+	}, nil
 }
 
 // Me is the resolver for the me field.
@@ -105,7 +273,7 @@ func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
 		return nil, fmt.Errorf("invalid user ID in context")
 	}
 
-	var user models.Users
+	var user models.User
 	if err := r.DB.First(&user, userID).Error; err != nil {
 		return nil, fmt.Errorf("user not found")
 	}
@@ -117,6 +285,16 @@ func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
 	}, nil
 }
 
+// Topics is the resolver for the topics field.
+func (r *queryResolver) Topics(ctx context.Context) ([]*model.Topic, error) {
+	panic(fmt.Errorf("not implemented: Topics - topics"))
+}
+
+// Topic is the resolver for the topic field.
+func (r *queryResolver) Topic(ctx context.Context, id string) (*model.Topic, error) {
+	panic(fmt.Errorf("not implemented: Topic - topic"))
+}
+
 // Mutation returns MutationResolver implementation.
 func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 
@@ -125,3 +303,25 @@ func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//    it when you're done.
+//  - You have helper methods in this file. Move them out to keep these resolver files clean.
+/*
+	func (r *queryResolver) StudyNotes(ctx context.Context, id string) (*model.StudyNotes, error) {
+	return []*model.StudyNote{
+		{ID: "1", Title: "Belajar GraphQL"},
+		{ID: "2", Title: "Belajar Go dan gqlgen"},
+		{ID: "3", Title: "Autentikasi JWT"},
+	}, nil
+}
+func (r *queryResolver) GetStudyNoteByID(ctx context.Context, id string) (*model.StudyNotes, error) {
+	panic(fmt.Errorf("not implemented: GetStudyNoteByID - getStudyNoteById"))
+}
+func (r *queryResolver) ListStudyNotes(ctx context.Context) ([]*model.StudyNotes, error) {
+	panic(fmt.Errorf("not implemented: ListStudyNotes - listStudyNotes"))
+}
+*/

@@ -23,12 +23,14 @@ func ConnectDB() *gorm.DB {
 	fmt.Println("✅ Connected to MySQL database")
 
 	err = DB.AutoMigrate(
-		&models.Users{},
+		&models.User{},       
+		&models.Topic{},
+		&models.StudyNote{},
 	)
 	if err != nil {
 		log.Fatal("Failed to migrate models:", err)
 	}
 	fmt.Println("✅ Database migration completed")
 
-	return DB // ✅ tambahkan ini
+	return DB
 }

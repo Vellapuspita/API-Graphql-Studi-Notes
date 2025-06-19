@@ -2,12 +2,30 @@
 
 package model
 
+import (
+	"time"
+)
+
 type AuthResponse struct {
 	Token string `json:"token"`
 	User  *User  `json:"user"`
 }
 
+type CreateStudyNoteInput struct {
+	IDUsers   int32   `json:"id_users"`
+	IDTopics  int32   `json:"id_topics"`
+	Judul     string  `json:"judul"`
+	CreatedBy int32   `json:"created_by"`
+	IsGrup    bool    `json:"is_grup"`
+	Deskripsi *string `json:"deskripsi,omitempty"`
+	Content   *string `json:"content,omitempty"`
+}
+
 type Mutation struct {
+}
+
+type NewTopicInput struct {
+	Topics string `json:"topics"`
 }
 
 type Query struct {
@@ -21,8 +39,36 @@ type RegisterInput struct {
 }
 
 type StudyNote struct {
-	ID    string `json:"id"`
-	Title string `json:"title"`
+	ID        string    `json:"id"`
+	IDUsers   int32     `json:"id_users"`
+	IDTopics  int32     `json:"id_topics"`
+	Judul     string    `json:"judul"`
+	CreatedBy int32     `json:"created_by"`
+	IsGrup    bool      `json:"is_grup"`
+	Deskripsi *string   `json:"deskripsi,omitempty"`
+	Content   *string   `json:"content,omitempty"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+	Users     []*User   `json:"users"`
+}
+
+type Topic struct {
+	ID     string `json:"id"`
+	Topics string `json:"topics"`
+}
+
+type UpdateStudyNoteInput struct {
+	IDUsers   *int32  `json:"id_users,omitempty"`
+	IDTopics  *int32  `json:"id_topics,omitempty"`
+	Judul     *string `json:"judul,omitempty"`
+	CreatedBy *int32  `json:"created_by,omitempty"`
+	IsGrup    *bool   `json:"is_grup,omitempty"`
+	Deskripsi *string `json:"deskripsi,omitempty"`
+	Content   *string `json:"content,omitempty"`
+}
+
+type UpdateTopicInput struct {
+	Topics string `json:"topics"`
 }
 
 type User struct {
