@@ -79,6 +79,57 @@ func (r *mutationResolver) Login(ctx context.Context, email string, password str
 	}, nil
 }
 
+// CreateTopic is the resolver for the createTopic field.
+func (r *mutationResolver) CreateTopic(ctx context.Context, input model.NewTopicInput) (*model.Topic, error) {
+	// Buat struct dari DB model
+	newTopic := &models.Topic{
+		Topics: input.Topics,
+	}
+
+	// Simpan ke DB
+	if err := r.DB.Create(newTopic).Error; err != nil {
+		return nil, fmt.Errorf("failed to create topic: %v", err)
+	}
+
+	// Kembalikan GraphQL response
+	return &model.Topic{
+		ID:     fmt.Sprint(newTopic.ID), // konversi dari uint ke string
+		Topics: newTopic.Topics,
+	}, nil
+}
+
+// UpdateTopic is the resolver for the updateTopic field.
+func (r *mutationResolver) UpdateTopic(ctx context.Context, id string, input model.UpdateTopicInput) (*model.Topic, error) {
+	var topic models.Topic
+
+	// Cari by ID
+	if err := r.DB.First(&topic, id).Error; err != nil {
+		return nil, fmt.Errorf("topic not found")
+	}
+
+	// Update field
+	topic.Topics = input.Topics
+
+	// Simpan perubahan
+	if err := r.DB.Save(&topic).Error; err != nil {
+		return nil, fmt.Errorf("failed to update topic: %v", err)
+	}
+
+	// Kembalikan hasil ke GraphQL
+	return &model.Topic{
+		ID:     fmt.Sprint(topic.ID),
+		Topics: topic.Topics,
+	}, nil
+}
+
+// DeleteTopic is the resolver for the deleteTopic field.
+func (r *mutationResolver) DeleteTopic(ctx context.Context, id string) (bool, error) {
+	if err := r.DB.Delete(&models.Topic{}, id).Error; err != nil {
+		return false, fmt.Errorf("failed to delete topic: %v", err)
+	}
+	return true, nil
+}
+
 // StudyNotes is the resolver for the studyNotes field.
 func (r *queryResolver) StudyNotes(ctx context.Context) ([]*model.StudyNote, error) {
 	return []*model.StudyNote{
@@ -117,6 +168,16 @@ func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
 	}, nil
 }
 
+// Topics is the resolver for the topics field.
+func (r *queryResolver) Topics(ctx context.Context) ([]*model.Topic, error) {
+	panic(fmt.Errorf("not implemented: Topics - topics"))
+}
+
+// Topic is the resolver for the topic field.
+func (r *queryResolver) Topic(ctx context.Context, id string) (*model.Topic, error) {
+	panic(fmt.Errorf("not implemented: Topic - topic"))
+}
+
 // Mutation returns MutationResolver implementation.
 func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 
@@ -125,3 +186,18 @@ func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//    it when you're done.
+//  - You have helper methods in this file. Move them out to keep these resolver files clean.
+/*
+	func (r *mutationResolver) CreatedTopic(ctx context.Context, input model.NewTopic) (*model.Topic, error) {
+	panic(fmt.Errorf("not implemented: CreatedTopic - createdTopic"))
+}
+func (r *mutationResolver) DeletTopic(ctx context.Context, id string) (bool, error) {
+	panic(fmt.Errorf("not implemented: DeletTopic - deletTopic"))
+}
+*/

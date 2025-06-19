@@ -24,6 +24,7 @@ func ConnectDB() *gorm.DB {
 
 	err = DB.AutoMigrate(
 		&models.Users{},
+		&models.Topic{},
 	)
 	if err != nil {
 		log.Fatal("Failed to migrate models:", err)

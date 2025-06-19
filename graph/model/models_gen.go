@@ -10,6 +10,10 @@ type AuthResponse struct {
 type Mutation struct {
 }
 
+type NewTopicInput struct {
+	Topics string `json:"topics"`
+}
+
 type Query struct {
 }
 
@@ -23,6 +27,15 @@ type RegisterInput struct {
 type StudyNote struct {
 	ID    string `json:"id"`
 	Title string `json:"title"`
+}
+
+type Topic struct {
+	ID     string `json:"id"`
+	Topics string `json:"topics"`
+}
+
+type UpdateTopicInput struct {
+	Topics string `json:"topics"`
 }
 
 type User struct {

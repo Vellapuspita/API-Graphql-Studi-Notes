@@ -5,11 +5,16 @@ type Query {
   studyNotes:[StudyNote!]!
   StudyNote(id: ID!): StudyNote
   me: User
+  topics: [Topic!]!
+  topic(id: ID!): Topic
 }
 
 type Mutation {
   register(input: RegisterInput!): AuthResponse!
   login(email: String!, password: String!): AuthResponse!
+  createTopic(input: NewTopicInput!): Topic!
+  updateTopic(id: ID!, input: UpdateTopicInput!): Topic!
+  deleteTopic(id: ID!): Boolean!
 }
 
 type User {
@@ -28,6 +33,19 @@ input RegisterInput{
   email: String!
   password: String!
   confirmPassword: String!
+}
+
+type Topic {
+  id: ID!
+  topics: String!
+}
+
+input NewTopicInput {
+  topics: String!
+}
+
+input UpdateTopicInput {
+  topics: String!
 }
 
 type AuthResponse{
