@@ -2,7 +2,7 @@ package models
 
 import "time"
 
-type Users struct {
+type User struct {
 	ID             uint      `gorm:"column:id_users;primaryKey" json:"id"`
 	Name           string    `gorm:"column:username" json:"name"`
 	Email          string    `gorm:"column:email" json:"email"`
@@ -12,9 +12,9 @@ type Users struct {
 	UpdatedAt      time.Time `gorm:"column:updated_at" json:"updated_at"`
 
 	// Relasi many-to-many dengan StudyNotes melalui tabel "collab"
-	StudyNotes []StudyNotes `gorm:"many2many:collab;joinForeignKey:ID;joinReferences:ID"`
+	StudyNotes []StudyNote `gorm:"many2many:collab;joinForeignKey:ID;joinReferences:ID"`
 }
 
-func (Users) TableName() string {
+func (User) TableName() string {
 	return "users"
 }

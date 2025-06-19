@@ -1,10 +1,9 @@
-# GraphQl schema example
-
+scalar Time
 
 type Query {
-  studyNotes:[StudyNote!]!
-  StudyNote(id: ID!): StudyNote
-  me: User
+  studyNotes: [StudyNote!]!
+  studyNote(id: ID!): StudyNote
+  me: User  
   topics: [Topic!]!
   topic(id: ID!): Topic
 }
@@ -15,6 +14,9 @@ type Mutation {
   createTopic(input: NewTopicInput!): Topic!
   updateTopic(id: ID!, input: UpdateTopicInput!): Topic!
   deleteTopic(id: ID!): Boolean!
+  createStudyNote(input: CreateStudyNoteInput!): StudyNote!
+  updateStudyNote(id: ID!, input: UpdateStudyNoteInput!): StudyNote!
+  deleteStudyNote(id: ID!): Boolean!
 }
 
 type User {
@@ -23,21 +25,30 @@ type User {
   email: String!
 }
 
-type StudyNote {
+type Topic {
   id: ID!
-  title: String!
+  topics: String!
 }
 
-input RegisterInput{
+type StudyNote {
+  id: ID!
+  id_users: Int!
+  id_topics: Int!
+  judul: String!
+  created_by: Int!
+  is_grup: Boolean!
+  deskripsi: String
+  content: String
+  created_at: Time!
+  updated_at: Time!
+  users: [User!]! # kolaborator
+}
+
+input RegisterInput {
   name: String!
   email: String!
   password: String!
   confirmPassword: String!
-}
-
-type Topic {
-  id: ID!
-  topics: String!
 }
 
 input NewTopicInput {
@@ -48,7 +59,27 @@ input UpdateTopicInput {
   topics: String!
 }
 
-type AuthResponse{
+input CreateStudyNoteInput {
+  id_users: Int!
+  id_topics: Int!
+  judul: String!
+  created_by: Int!
+  is_grup: Boolean!
+  deskripsi: String
+  content: String
+}
+
+input UpdateStudyNoteInput {
+  id_users: Int
+  id_topics: Int
+  judul: String
+  created_by: Int
+  is_grup: Boolean
+  deskripsi: String
+  content: String
+}
+
+type AuthResponse {
   token: String!
   user: User!
 }
